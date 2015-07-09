@@ -25,6 +25,11 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 
 /**
  * REST Web Service
@@ -60,7 +65,7 @@ public class GenericResource {
      * @throws java.lang.IllegalAccessException
      */
     @GET
-    @Path("/product")
+    @Path("/products")
     @Produces(MediaType.APPLICATION_JSON)
     public ArrayList<product> getXml() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
@@ -79,9 +84,9 @@ public class GenericResource {
     }
 
     @GET
-    @Path("/products")
+    @Path("/products/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ArrayList<product> oneProduct(@QueryParam("id") int id) throws SQLException
+    public ArrayList<product> oneProduct(@PathParam("id") int id) throws SQLException
     {
         Statement smt = conn.createStatement();
         ResultSet rs = smt.executeQuery("select * from product where productid="+id);
@@ -96,16 +101,38 @@ public class GenericResource {
         return products;
     }
     
+    /**
+     *
+     * @param obj
+     * @return
+     * @throws SQLException
+     */
     @POST
     @Path("/products")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
    
-    public void createProduct(@QueryParam("id") int id,@QueryParam("name") String name, @QueryParam("description") String description, @QueryParam("quantity") int quantity) throws SQLException
+     public Response createProduct(String str) throws SQLException, ParseException
     {
-       Statement smt = conn.createStatement();
-        ResultSet rs = smt.executeQuery("INSERT INTO product (productId,name,description,quantity) VALUES ("+id+","+name+","+description+","+quantity+")");
+        
+        JSONParser parser = new JSONParser();
+JSONObject json = (JSONObject) parser.parse(str);
+  
+ Object id = json.get("id");
+ String productid=id.toString();
+ int Id=Integer.parseInt(productid);
+ Object name = json.get("name");
+ String productname=name.toString();
+         Object description = json.get("description");
+ String productdescription=description.toString();
+         Object quantity = json.get("quantity");
+ String productquantity=quantity.toString();
+ int Qnt=Integer.parseInt(productquantity);
+  Statement smt = conn.createStatement();
+  smt.executeUpdate("INSERT INTO product VALUES ('"+Id+"','"+productname+"','"+productdescription+"','"+Qnt+"' )");
+  return Response.status(Status.CREATED).build();
     }
+    
     
     /**
      * PUT method for updating or creating an instance of GenericResource
