@@ -40,7 +40,8 @@ import org.json.simple.parser.ParseException;
  */
 @Path("/")
 public class GenericResource {
-    JsonArray productarray = Json.createArrayBuilder().build();
+    JsonObjectBuilder json = Json.createObjectBuilder();
+    JsonArrayBuilder productarray = Json.createArrayBuilder();
     DatabaseConnection connections = new DatabaseConnection();
     product pro = new product();
     ArrayList<product> products = new ArrayList<>();
@@ -69,7 +70,7 @@ public class GenericResource {
     @GET
     @Path("/products")
     @Produces(MediaType.APPLICATION_JSON)
-    public JsonArray getXml() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public String getXml() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         Statement smt = conn.createStatement();
         ResultSet rs = smt.executeQuery("select * from product");
@@ -81,17 +82,15 @@ public class GenericResource {
             product pro = new product(rs.getInt("productid"), rs.getString("name"), rs.getString("description"), rs.getInt("quantity"));
             products.add(pro);
          
-          productarray = Json.createArrayBuilder()
-     .add(Json.createObjectBuilder()
-         .add("productID", rs.getInt("productid"))
-         .add("name",rs.getString("name"))
-     
-         .add("description",rs.getString("description"))
-         .add("quantity", rs.getInt("quantity")))
-     .build();
+          json = Json.createObjectBuilder()
+                        .add("productID", rs.getInt("productID"))
+                        .add("name", rs.getString("name"))
+                        .add("description", rs.getString("description"))
+                        .add("quantity", rs.getInt("quantity"));
+               productarray.add(json);
         }
-
-        return productarray;
+ String res = productarray.build().toString();
+        return res;
     }
 
     @GET
