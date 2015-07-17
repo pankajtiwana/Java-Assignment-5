@@ -70,7 +70,7 @@ public class GenericResource {
     @GET
     @Path("/products")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getXml() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
+    public String getAllProducts() throws ClassNotFoundException, SQLException, InstantiationException, IllegalAccessException {
 
         Statement smt = conn.createStatement();
         ResultSet rs = smt.executeQuery("select * from product");
@@ -96,7 +96,7 @@ public class GenericResource {
     @GET
     @Path("/products/{id}")
     @Produces(MediaType.APPLICATION_JSON)
-    public ArrayList<product> oneProduct(@PathParam("id") int id) throws SQLException
+    public String oneProduct(@PathParam("id") int id) throws SQLException
     {
         Statement smt = conn.createStatement();
         ResultSet rs = smt.executeQuery("select * from product where productid="+id);
@@ -106,9 +106,17 @@ public class GenericResource {
 
             product pro = new product(rs.getInt("productid"), rs.getString("name"), rs.getString("description"), rs.getInt("quantity"));
             products.add(pro);
+            
+             json = Json.createObjectBuilder()
+                        .add("productID", rs.getInt("productID"))
+                        .add("name", rs.getString("name"))
+                        .add("description", rs.getString("description"))
+                        .add("quantity", rs.getInt("quantity"));
+               productarray.add(json);
         }
 
-        return products;
+       String res = productarray.build().toString();
+        return res;
     }
     
     /**
